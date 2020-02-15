@@ -1,0 +1,195 @@
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.util.stream.Collectors;
+import org.json.*;//要先到https://github.com/douglascrockford/JSON-java下載
+
+public class form1 {
+    private JButton btn_Ok;
+    private JButton btn_Close;
+    private JTextField textField1;
+    private JPanel Panel1;
+    private JTextArea textArea1;
+    private static JFrame frame;
+
+    public static String getURLData(String aUrl, String query_str) throws MalformedURLException, IOException {
+        String urlData = "";
+        try {
+            URL urlObj = new URL(aUrl+"?q="+query_str+"&sort=行政區");
+            //Ref:https://stackoom.com/question/3zhYv/%E6%9D%A5%E8%87%AAJava%E4%BB%A3%E7%A0%81%E7%9A%84HttpsURLConnection%E6%97%B6javax-net-ssl-SSLHandshakeException
+            //解決HTTPS認證問題
+            SSLContext ssl_ctx = SSLContext.getInstance("TLS");
+            TrustManager[ ] trust_mgr = new TrustManager[ ] {
+                    new X509TrustManager() {
+                        public X509Certificate[ ] getAcceptedIssuers() { return null; }
+                        public void checkClientTrusted(X509Certificate[ ] certs, String t) { }
+                        public void checkServerTrusted(X509Certificate[ ] certs, String t) { }
+                    }
+            };
+            ssl_ctx.init(null,                // key manager
+                    trust_mgr,           // trust manager
+                    new SecureRandom()); // random number generator
+            HttpsURLConnection.setDefaultSSLSocketFactory(ssl_ctx.getSocketFactory());
+            //解決HTTPS認證問題-javax.net.ssl.SSLHandshakeException: PKIX path building failed openConnection
+
+            URLConnection conn = urlObj.openConnection();
+
+            String line;
+            String json_str="";
+            //query_str = query_str.replaceAll("臺", "台");
+            int count = 1;
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            while ((line = reader.readLine()) != null) {
+                //line.replaceAll("臺", "台");
+                json_str+=line;
+            }
+            //System.out.println(json_str);
+            JSONObject json=new JSONObject(json_str);//Parse JSON String to JSON Object
+            System.out.println(json);
+            org.json.JSONArray objarray = json.getJSONArray("data");
+            for(Object item : objarray) {//ForEach
+                //System.out.println(((JSONObject)item).get("可提供小型車停車位"));
+                //if( ((JSONObject)item).get("地址").toString().indexOf(query_str)!=-1 ){
+                    String msg="";
+                    msg+="停車場:"+((JSONObject)item).get("臨時停車處所");
+                    msg+=",車位數:"+((JSONObject)item).get("可提供小型車停車位");
+                    msg+=",地址"+((JSONObject)item).get("行政區")+((JSONObject)item).get("地址");
+                    urlData+=msg+"\n";
+                    //System.out.println(msg);
+                //}
+            }
+
+
+            //urlData = reader.lines().collect(Collectors.joining("\n"));
+        } catch (Exception e) {
+            System.out.println("Exception:"+e.toString());
+
+        }
+        System.out.println("Got it!!");
+        return urlData;
+    }
+
+    public form1() {
+        btn_Ok.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                 textArea1.setText("");
+                try {
+                    textArea1.setText(form1.getURLData("https://api.kcg.gov.tw/api/service/get/897e552a-2887-4f6f-a6ee-709f7fbe0ee3", textField1.getText()));
+                } catch (Exception e) {
+                }
+                textField1.setText("你下按鈕了!!!");
+            }
+        });
+        btn_Close.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                //System.exit(0);
+                frame.dispose();
+            }
+        });
+    }
+
+
+    public static void test() {
+        System.out.print("test");
+    }
+
+    public static void main(String[] args) {
+        frame = new JFrame("form1");
+        frame.setContentPane(new form1().Panel1);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+    }
+
+    {
+        aaaa();
+    }
+
+    private void aaaa() {
+        System.out.println("aaaa,lamda???");
+    }
+
+
+    {
+// GUI initializer generated by IntelliJ IDEA GUI Designer
+// >>> IMPORTANT!! <<<
+// DO NOT EDIT OR ADD ANY CODE HERE!
+        $$$setupUI$$$();
+    }
+
+    /**
+     * Method generated by IntelliJ IDEA GUI Designer
+     * >>> IMPORTANT!! <<<
+     * DO NOT edit this method OR call it in your code!
+     *
+     * @noinspection ALL
+     */
+    private void $$$setupUI$$$() {
+        Panel1 = new JPanel();
+        Panel1.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(5, 1, new Insets(0, 0, 0, 0), -1, -1));
+        Panel1.setMinimumSize(new Dimension(500, 600));
+        final JPanel panel1 = new JPanel();
+        panel1.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        Panel1.add(panel1, new com.intellij.uiDesigner.core.GridConstraints(4, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        btn_Ok = new JButton();
+        btn_Ok.setText("Ok");
+        btn_Ok.setMnemonic('O');
+        btn_Ok.setDisplayedMnemonicIndex(0);
+        panel1.add(btn_Ok, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        btn_Close = new JButton();
+        btn_Close.setText("Close");
+        btn_Close.setMnemonic('C');
+        btn_Close.setDisplayedMnemonicIndex(0);
+        panel1.add(btn_Close, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final com.intellij.uiDesigner.core.Spacer spacer1 = new com.intellij.uiDesigner.core.Spacer();
+        Panel1.add(spacer1, new com.intellij.uiDesigner.core.GridConstraints(3, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_VERTICAL, 1, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        final JLabel label1 = new JLabel();
+        label1.setText("輸入連線資訊");
+        Panel1.add(label1, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JPanel panel2 = new JPanel();
+        panel2.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
+        Panel1.add(panel2, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final JLabel label2 = new JLabel();
+        label2.setText("查詢區域");
+        panel2.add(label2, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        textField1 = new JTextField();
+        panel2.add(textField1, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        final JLabel label3 = new JLabel();
+        label3.setText("伺服器名稱");
+        panel2.add(label3, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JPanel panel3 = new JPanel();
+        panel3.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        Panel1.add(panel3, new com.intellij.uiDesigner.core.GridConstraints(2, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(500, 500), null, 0, false));
+        final JScrollPane scrollPane1 = new JScrollPane();
+        scrollPane1.setAutoscrolls(false);
+        scrollPane1.setHorizontalScrollBarPolicy(30);
+        panel3.add(scrollPane1, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        textArea1 = new JTextArea();
+        textArea1.setAutoscrolls(false);
+        textArea1.setMinimumSize(new Dimension(500, 500));
+        scrollPane1.setViewportView(textArea1);
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    public JComponent $$$getRootComponent$$$() {
+        return Panel1;
+    }
+
+}
